@@ -1,0 +1,21 @@
+name = "cowl"
+version = "1.0.0"
+gleam = ">= 1.4.0"
+
+description = """
+Type-safe secret masking for Gleam. Hide passwords, API keys,
+and other sensitive values without ceremony.
+"""
+
+licences = ["MIT"]
+repository = { type = "github", user = "lupodevelop", repo = "cowl" }
+links = [{ title = "Changelog", href = "https://github.com/lupodevelop/cowl/blob/main/CHANGELOG.md" }]
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+
+[dev]
+source_dirs = ["dev"]
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
