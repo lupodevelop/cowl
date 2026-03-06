@@ -1,14 +1,15 @@
 <div align="center">
-  <img src="assets/img/mask.png" alt="cowl logo" width="256px" />
+  <img src="https://raw.githubusercontent.com/lupodevelop/cowl/main/assets/img/mask.png" alt="cowl logo" width="200" />
 </div>
 
+
+[![Package Version](https://img.shields.io/hexpm/v/cowl)](https://hex.pm/packages/cowl) [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/cowl/) [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE) [![CI](https://github.com/lupodevelop/cowl/actions/workflows/test.yml/badge.svg)](https://github.com/lupodevelop/cowl/actions/workflows/test.yml)   [![Built with Gleam](https://img.shields.io/badge/built%20with-gleam-ffaff3?logo=gleam)](https://gleam.run/)
+
 # cowl
+
 a Gleam library for securely handling sensitive data like passwords and API keys using opaque Secret types, preventing accidental exposure in logs and debugging output.
 
-[![Package Version](https://img.shields.io/hexpm/v/cowl)](https://hex.pm/packages/cowl)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/cowl/)
-[![License](https://img.shields.io/hexpm/l/cowl)](LICENSE)  
-[![Built with Gleam](https://img.shields.io/badge/built%20with-gleam-430098?logo=gleam)](https://gleam.run/)
+
 
 Hide passwords, API keys, and other sensitive values behind `Secret(a)` so
 they never accidentally end up in a log line.
