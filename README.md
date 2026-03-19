@@ -156,6 +156,18 @@ cowl.secret("hunter2")
 // 7
 ```
 
+### and_then
+
+Like `map`, but for functions that themselves return a `Secret`. Avoids
+`Secret(Secret(b))` when chaining operations that wrap their result.
+The outer secret's label is preserved; the inner one is discarded.
+
+```gleam
+cowl.secret("hunter2")
+|> cowl.and_then(fn(pw) { bcrypt.hash(pw) |> cowl.secret })
+// Secret(String) — one level, not nested
+```
+
 ### map_label
 
 If you need to rename or modify a label but not the secret itself, use
@@ -235,6 +247,18 @@ dict.get(cfg, "db_password")
 
 `labeled_from_result` without a label is also available as `from_result`.
 
+The same pattern works for `Option`:
+
+```gleam
+some_dict
+|> dict.get("api_key")  // Option(String)
+|> cowl.labeled_from_option("api_key")
+// Option(Secret(String))
+```
+
+`from_option` and `labeled_from_option` mirror `from_result` exactly — `None`
+passes through unchanged.
+
 **Building a config struct** (example with [`envoy`](https://hex.pm/packages/envoy)):
 
 [![envoy on hex.pm](https://img.shields.io/hexpm/v/envoy?label=envoy)](https://hex.pm/packages/envoy)
@@ -308,12 +332,15 @@ cowl.equal(stored_hash, cowl.secret(verify_hash(input)))
 | `equal` | `(Secret(a), Secret(a)) -> Bool` | Value equality, labels ignored |
 | `from_result` | `Result(a, e) -> Result(Secret(a), e)` | Wrap `Ok` value |
 | `labeled_from_result` | `(Result(a, e), String) -> Result(Secret(a), e)` | Wrap `Ok` value with label |
+| `from_option` | `Option(a) -> Option(Secret(a))` | Wrap `Some` value |
+| `labeled_from_option` | `(Option(a), String) -> Option(Secret(a))` | Wrap `Some` value with label |
 | `mask` | `Secret(String) -> String` | Stars |
 | `mask_with` | `(Secret(String), Strategy) -> String` | |
 | `to_string` | `Secret(String) -> String` | `"Secret(***)"` — safe for debug |
 | `reveal` | `Secret(a) -> a` | Explicit extraction |
 | `use_secret` | `(Secret(a), fn(a) -> b) -> b` | Callback, preferred |
 | `map` | `(Secret(a), fn(a) -> b) -> Secret(b)` | Stay wrapped |
+| `and_then` | `(Secret(a), fn(a) -> Secret(b)) -> Secret(b)` | Chain without nesting |
 | `field` | `Secret(String) -> #(String, String)` | `#(label, "***")` for log entries |
 | `field_with` | `(Secret(String), Strategy) -> #(String, String)` | Same, with explicit strategy |
 

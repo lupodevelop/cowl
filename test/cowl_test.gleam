@@ -4,13 +4,14 @@
 ///   - Construction: secret, labeled, with_label, get_label
 ///   - Masking: Stars, Fixed, Label, Peek (all modes + edge cases), Custom
 ///   - Extraction: reveal, use_secret
-///   - Transformation: map
+///   - Transformation: map, and_then
 ///   - Comparison: equal
 ///   - Debug: to_string
 ///   - Result helpers: from_result, labeled_from_result
+///   - Option helpers: from_option, labeled_from_option
 ///   - Logging helpers: field, field_with
 import cowl
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleeunit
 import gleeunit/should
@@ -552,4 +553,97 @@ pub fn tap_invokes_function_test() {
   // We use use_secret to observe the value inside side‑effect
   let called = cowl.tap(cowl.secret("z"), fn(v) { v == "z" })
   called |> cowl.reveal |> should.equal("z")
+}
+
+// ---------------------------------------------------------------------------
+// Transformation: and_then
+// ---------------------------------------------------------------------------
+
+pub fn and_then_transforms_value_test() {
+  cowl.secret("hello")
+  |> cowl.and_then(fn(v) { cowl.secret(string.length(v)) })
+  |> cowl.reveal
+  |> should.equal(5)
+}
+
+pub fn and_then_preserves_outer_label_test() {
+  cowl.labeled("hello", "greeting")
+  |> cowl.and_then(fn(v) { cowl.secret(string.uppercase(v)) })
+  |> cowl.get_label
+  |> should.equal(Some("greeting"))
+}
+
+pub fn and_then_discards_inner_label_test() {
+  // The inner secret's label is replaced by the outer's.
+  cowl.labeled("hello", "outer")
+  |> cowl.and_then(fn(v) { cowl.labeled(string.uppercase(v), "inner") })
+  |> cowl.get_label
+  |> should.equal(Some("outer"))
+}
+
+pub fn and_then_value_stays_wrapped_test() {
+  let s =
+    cowl.secret("hello")
+    |> cowl.and_then(fn(v) { cowl.secret(string.uppercase(v)) })
+  cowl.mask(s)
+  |> should.equal("***")
+}
+
+pub fn and_then_no_label_preserved_test() {
+  cowl.secret("x")
+  |> cowl.and_then(fn(v) { cowl.labeled(v, "inner") })
+  |> cowl.get_label
+  |> should.equal(None)
+}
+
+// ---------------------------------------------------------------------------
+// Option helpers: from_option
+// ---------------------------------------------------------------------------
+
+pub fn from_option_some_wraps_in_secret_test() {
+  Some("hunter2")
+  |> cowl.from_option
+  |> should.be_some
+  |> cowl.reveal
+  |> should.equal("hunter2")
+}
+
+pub fn from_option_none_stays_none_test() {
+  let opt: Option(String) = None
+  cowl.from_option(opt)
+  |> should.equal(None)
+}
+
+pub fn from_option_some_no_label_test() {
+  Some("tok")
+  |> cowl.from_option
+  |> should.be_some
+  |> cowl.get_label
+  |> should.equal(None)
+}
+
+// ---------------------------------------------------------------------------
+// Option helpers: labeled_from_option
+// ---------------------------------------------------------------------------
+
+pub fn labeled_from_option_some_attaches_label_test() {
+  Some("sk-abc")
+  |> cowl.labeled_from_option("openai_key")
+  |> should.be_some
+  |> cowl.get_label
+  |> should.equal(Some("openai_key"))
+}
+
+pub fn labeled_from_option_some_preserves_value_test() {
+  Some("sk-abc")
+  |> cowl.labeled_from_option("openai_key")
+  |> should.be_some
+  |> cowl.reveal
+  |> should.equal("sk-abc")
+}
+
+pub fn labeled_from_option_none_stays_none_test() {
+  let opt: Option(String) = None
+  cowl.labeled_from_option(opt, "api_key")
+  |> should.equal(None)
 }

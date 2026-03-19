@@ -28,6 +28,9 @@ pub type Strategy {
   Peek(mode: PeekMode, filler: String)
 
   /// Apply an arbitrary function to the raw value.
+  ///
+  /// ⚠️ The function receives the raw secret value. Never pass a logging
+  /// function directly — it will expose the secret. Use a pure transform only.
   Custom(f: fn(String) -> String)
 }
 
@@ -106,23 +109,13 @@ fn apply_peek(value: String, mode: PeekMode, filler: String) -> String {
     _ ->
       case mode {
         First(n) ->
-          case n <= 0 {
-            True -> filler
-            False ->
-              case n >= len {
-                True -> value
-                False -> string.slice(value, 0, n) <> filler
-              }
-          }
+          peek_part(n, len, value, filler, fn() {
+            string.slice(value, 0, n) <> filler
+          })
         Last(n) ->
-          case n <= 0 {
-            True -> filler
-            False ->
-              case n >= len {
-                True -> value
-                False -> filler <> string.slice(value, len - n, n)
-              }
-          }
+          peek_part(n, len, value, filler, fn() {
+            filler <> string.slice(value, len - n, n)
+          })
         Both(n, m) ->
           case n <= 0 || m <= 0 {
             True -> filler
@@ -135,6 +128,23 @@ fn apply_peek(value: String, mode: PeekMode, filler: String) -> String {
                   <> string.slice(value, len - m, m)
               }
           }
+      }
+  }
+}
+
+fn peek_part(
+  n: Int,
+  len: Int,
+  value: String,
+  filler: String,
+  build: fn() -> String,
+) -> String {
+  case n <= 0 {
+    True -> filler
+    False ->
+      case n >= len {
+        True -> value
+        False -> build()
       }
   }
 }
@@ -171,6 +181,21 @@ pub fn map(secret: Secret(a), f: fn(a) -> b) -> Secret(b) {
   Secret(expose: fn() { f(secret.expose()) }, label: secret.label)
 }
 
+/// Chain a transformation that itself returns a `Secret`, avoiding `Secret(Secret(b))`.
+///
+/// Unlike `map`, `f` returns a `Secret(b)` directly — useful when the
+/// mapping function produces a secret of its own. The label of the outer
+/// secret is preserved; the inner secret's label is discarded.
+///
+/// ```gleam
+/// cowl.secret("hunter2")
+/// |> cowl.and_then(fn(pw) { hash_password(pw) |> cowl.secret })
+/// ```
+pub fn and_then(secret: Secret(a), f: fn(a) -> Secret(b)) -> Secret(b) {
+  let inner = f(secret.expose())
+  Secret(expose: inner.expose, label: secret.label)
+}
+
 /// Transform only the label, leaving the value untouched.
 pub fn map_label(secret: Secret(a), f: fn(String) -> String) -> Secret(a) {
   Secret(expose: secret.expose, label: case secret.label {
@@ -197,6 +222,22 @@ pub fn from_result(res: Result(a, e)) -> Result(Secret(a), e) {
   case res {
     Ok(v) -> Ok(secret(v))
     Error(e) -> Error(e)
+  }
+}
+
+/// Wrap the `Some` value of an `Option` as a secret, returning `None` unchanged.
+pub fn from_option(opt: Option(a)) -> Option(Secret(a)) {
+  case opt {
+    Some(v) -> Some(secret(v))
+    None -> None
+  }
+}
+
+/// Like `from_option`, but also attaches a label.
+pub fn labeled_from_option(opt: Option(a), label: String) -> Option(Secret(a)) {
+  case opt {
+    Some(v) -> Some(labeled(v, label))
+    None -> None
   }
 }
 

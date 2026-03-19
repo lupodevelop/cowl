@@ -5,7 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-03-19
+
+### Added
+
+- `and_then` for monadic chaining — avoids `Secret(Secret(b))` when the mapping
+  function itself returns a `Secret`. The outer secret's label is preserved.
+- `from_option` to lift `Some(v)` into `Some(Secret(v))`, returning `None` unchanged.
+- `labeled_from_option` — like `from_option`, but attaches a label.
+
+### Changed
+
+- `Custom` strategy doc now includes an explicit warning that the function
+  receives the raw secret value and must not be used for logging.
+- Internal `apply_peek` refactored: guard logic for `First` and `Last` modes
+  extracted into a private `peek_part` helper, eliminating triplication.
+
 ## [1.0.0] - 2026-03-06
+
 ### Added
 - Complete secret‑wrapping API with optional labels (`Secret(a)`).
 - Multiple masking strategies: `Stars`, `Fixed`, `Label`, `Peek`, `Custom`.
