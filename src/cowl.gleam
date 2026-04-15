@@ -109,7 +109,11 @@ pub fn with_label(secret: Secret(a), label: String) -> Secret(a) {
 
 /// Remove the label from a secret. The value and masker are untouched.
 pub fn remove_label(secret: Secret(a)) -> Secret(a) {
-  Secret(expose: secret.expose, label: None, default_masker: secret.default_masker)
+  Secret(
+    expose: secret.expose,
+    label: None,
+    default_masker: secret.default_masker,
+  )
 }
 
 /// Return the label, if any.
