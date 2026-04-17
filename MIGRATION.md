@@ -1,4 +1,4 @@
-# Migration Guide — cowl 1.x → 2.0
+# Migration Guide - cowl 1.x → 2.0
 
 This guide covers every breaking change in cowl 2.0 and shows the exact
 one-to-one replacements.
@@ -13,12 +13,12 @@ one-to-one replacements.
 | Tap on raw value | `cowl.tap(s, f)` | `unsafe.tap_raw(s, f)` |
 | Boundary callback | `cowl.use_secret(s, f)` | `cowl.with_secret(s, f)` |
 
-Everything else is additive — existing code that does not use `reveal`,
+Everything else is additive - existing code that does not use `reveal`,
 `tap`, or `use_secret` compiles and behaves identically in 2.0.
 
 ---
 
-## Step 1 — Add the `cowl/unsafe` import where needed
+## Step 1 - Add the `cowl/unsafe` import where needed
 
 Any file that calls `reveal` or `tap` needs:
 
@@ -31,7 +31,7 @@ which files require it.
 
 ---
 
-## Step 2 — Replace `cowl.reveal`
+## Step 2 - Replace `cowl.reveal`
 
 **Before:**
 
@@ -51,11 +51,11 @@ let raw = unsafe.reveal(secret)
 now signals to every reader of the code that the raw value is being extracted.
 
 > If you only need the value inside a function, prefer `cowl.with_secret`
-> (see Step 4) — it is safer because the raw value cannot escape the callback.
+> (see Step 4) - it is safer because the raw value cannot escape the callback.
 
 ---
 
-## Step 3 — Replace `cowl.tap`
+## Step 3 - Replace `cowl.tap`
 
 `tap` is split into two functions depending on your intent.
 
@@ -99,7 +99,7 @@ never enters the function, so there is nothing to accidentally log.
 
 ---
 
-## Step 4 — Replace `cowl.use_secret`
+## Step 4 - Replace `cowl.use_secret`
 
 **Before:**
 
@@ -119,15 +119,15 @@ Rename only. The semantics and type signature are identical.
 
 ## What you get for free (no migration needed)
 
-These changes are additive or signature-widening — no call sites break.
+These changes are additive or signature-widening - no call sites break.
 
 ### `mask` now works on any `Secret(a)`
 
 ```gleam
-// 1.x — only Secret(String)
+// 1.x - only Secret(String)
 cowl.mask(cowl.secret("hunter2"))  // "***"
 
-// 2.0 — also works on Secret(Int), Secret(MyRecord), etc.
+// 2.0 - also works on Secret(Int), Secret(MyRecord), etc.
 cowl.mask(cowl.secret(42))         // "***"
 cowl.mask(cowl.new(42, fn(n) { "int:***" }))  // "int:***"
 ```
@@ -135,22 +135,22 @@ cowl.mask(cowl.new(42, fn(n) { "int:***" }))  // "int:***"
 ### New constructors
 
 ```gleam
-// token — smart partial-reveal masker, no config needed
+// token - smart partial-reveal masker, no config needed
 cowl.token("sk-abc123xyz789") |> cowl.mask
 // "sk-a...z789"
 
-// new — explicit masker for any type
+// new - explicit masker for any type
 cowl.new(#("admin", "secret"), fn(pair) {
   let #(user, _) = pair
   "[" <> user <> ":***]"
 }) |> cowl.mask
 // "[admin:***]"
 
-// string — type-constrained alias for secret
+// string - type-constrained alias for secret
 cowl.string("hunter2")  // identical to cowl.secret("hunter2")
 ```
 
-### `tap_masked` — safe logging in a pipeline
+### `tap_masked` - safe logging in a pipeline
 
 ```gleam
 api_key
@@ -173,7 +173,7 @@ cowl.field(cowl.new(42, fn(_) { "num:***" }))  // #("secret", "num:***")
 - [ ] Replace `cowl.reveal(s)` → `unsafe.reveal(s)`
 - [ ] Replace `cowl.tap(s, f)` → `unsafe.tap_raw(s, f)` **or** `cowl.tap_masked(s, f)` (preferred for logging)
 - [ ] Replace `cowl.use_secret(s, f)` → `cowl.with_secret(s, f)`
-- [ ] Run `gleam build` — the compiler will catch any missed call sites
+- [ ] Run `gleam build` - the compiler will catch any missed call sites
 - [ ] Run `gleam test`
 
 ---

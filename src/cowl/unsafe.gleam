@@ -1,7 +1,7 @@
 /// Unsafe operations on secrets.
 ///
-/// Importing this module is an explicit signal — to reviewers, linters, and
-/// future maintainers — that the surrounding code deliberately breaks the
+/// Importing this module is an explicit signal - to reviewers, linters, and
+/// future maintainers - that the surrounding code deliberately breaks the
 /// secret boundary. Every function here touches the raw value directly.
 ///
 /// **Rules for using `cowl/unsafe`:**
@@ -10,7 +10,7 @@
 /// 3. Treat every `import cowl/unsafe` line as a code-review red flag.
 ///
 /// If you need the value for a request, hash, or comparison, use
-/// `cowl.with_secret` instead — it keeps the raw value contained.
+/// `cowl.with_secret` instead - it keeps the raw value contained.
 import cowl.{type Secret}
 
 /// Extract the raw value from a secret.

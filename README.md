@@ -26,25 +26,25 @@ gleam add cowl
 
 ```gleam
 import cowl
-import cowl/unsafe  // explicit danger zone — see below
+import cowl/unsafe  // explicit danger zone - see below
 
 // Wrap at the boundary.
 let key = cowl.labeled("sk-abc123xyz789", "openai_key")
 let tok = cowl.token("sk-abc123xyz789")   // smart peek masker built in
 
-// Safe display — never the raw value.
+// Safe display - never the raw value.
 cowl.mask(key)                                       // "***"
 cowl.mask(tok)                                       // "sk-a...y789"
 cowl.mask_with(key, cowl.Peek(cowl.Last(4), "...")) // "...y789"
 cowl.field(key)                                      // #("openai_key", "***")
 
-// Use the value inside a callback — it cannot escape.
+// Use the value inside a callback - it cannot escape.
 cowl.with_secret(key, fn(raw) { send_request(raw) })
 
-// Safe side effects — callback receives the masked string, not the raw value.
+// Safe side effects - callback receives the masked string, not the raw value.
 cowl.tap_masked(tok, fn(m) { logger.info("key: " <> m) })
 
-// Raw extraction lives in cowl/unsafe — visible in every code review.
+// Raw extraction lives in cowl/unsafe - visible in every code review.
 unsafe.reveal(key)
 ```
 
@@ -54,8 +54,8 @@ unsafe.reveal(key)
 
 Cowl splits operations into two zones:
 
-- **`cowl`** — everything safe. No raw value ever leaves a callback.
-- **`cowl/unsafe`** — touches the raw value directly. An `import cowl/unsafe`
+- **`cowl`** - everything safe. No raw value ever leaves a callback.
+- **`cowl/unsafe`** - touches the raw value directly. An `import cowl/unsafe`
   in production code is a code-review red flag by design.
 
 ---
@@ -92,13 +92,13 @@ cowl.mask_with(s, cowl.Custom(string.uppercase))  // raw → transformed
 ## Transformation
 
 ```gleam
-// map — transforms the value, preserves label, drops masker (type changed).
+// map - transforms the value, preserves label, drops masker (type changed).
 cowl.secret("hunter2") |> cowl.map(string.length)  // Secret(Int)
 
-// and_then — like map but for functions that return Secret. Inner masker carried forward.
+// and_then - like map but for functions that return Secret. Inner masker carried forward.
 cowl.secret("hunter2") |> cowl.and_then(fn(pw) { hash(pw) |> cowl.secret })
 
-// map_label — rename label without touching value or masker.
+// map_label - rename label without touching value or masker.
 cowl.labeled("tok", "old") |> cowl.map_label(string.uppercase)
 ```
 
@@ -149,7 +149,7 @@ pub fn bearer_auth(req: Request, token: Secret(String)) -> Request {
 
 ## Note on `io.debug`
 
-The value lives inside a closure — `io.debug`, `echo`, and `string.inspect`
+The value lives inside a closure - `io.debug`, `echo`, and `string.inspect`
 print the closure reference, not the raw value. Use `cowl.to_string` for
 safe debug output:
 
@@ -165,4 +165,4 @@ See [MIGRATION.md](MIGRATION.md).
 
 ---
 
-Made with 💜 in [Gleam](https://gleam.run/). MIT — *cowl · lupodevelop · 2026*
+Made with 💜 in [Gleam](https://gleam.run/). MIT - *cowl · lupodevelop · 2026*

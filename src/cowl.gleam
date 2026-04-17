@@ -38,7 +38,7 @@ pub type Strategy {
   /// Apply an arbitrary function to the raw value.
   ///
   /// ⚠️ The function receives the raw secret value. Never pass a logging
-  /// function directly — it will expose the secret. Use a pure transform only.
+  /// function directly - it will expose the secret. Use a pure transform only.
   Custom(f: fn(String) -> String)
 }
 
@@ -71,7 +71,7 @@ pub fn string(value: String) -> Secret(String) {
 /// Wrap an API token with a smart partial-reveal masker.
 ///
 /// `mask` will show the first 4 and last 4 characters with `"..."` in
-/// between — enough to identify a token without exposing it.
+/// between - enough to identify a token without exposing it.
 ///
 /// ```gleam
 /// cowl.token("sk-abc123xyz789") |> cowl.mask
@@ -153,7 +153,7 @@ pub fn mask_with(secret: Secret(String), strategy: Strategy) -> String {
   }
 }
 
-/// A safe debug string — always `"Secret(***)"` or `"Secret(<masked>)"`.
+/// A safe debug string - always `"Secret(***)"` or `"Secret(<masked>)"`.
 /// Never reveals the actual value.
 pub fn to_string(secret: Secret(a)) -> String {
   "Secret(" <> mask(secret) <> ")"
@@ -210,7 +210,7 @@ fn peek_part(
 // Comparison
 // ---------------------------------------------------------------------------
 
-/// Compare two secrets by value — labels and maskers are ignored.
+/// Compare two secrets by value - labels and maskers are ignored.
 pub fn equal(a: Secret(a), b: Secret(a)) -> Bool {
   a.expose() == b.expose()
 }
